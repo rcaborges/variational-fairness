@@ -26,7 +26,7 @@ def filter_triplets(tp, min_uc=5, min_sc=0):
 
 def split_train_test_proportion(data, test_prop=0.2):
     data_grouped_by_user = data.groupby('userId')
-    tr_list, te_list = list(), list()
+    tr_list, te_list, raw_list = list(), list(), list()
 
     np.random.seed(98765)
 
@@ -39,8 +39,10 @@ def split_train_test_proportion(data, test_prop=0.2):
 
             tr_list.append(group[np.logical_not(idx)])
             te_list.append(group[idx])
+            raw_list.append(group)
         else:
             tr_list.append(group)
+            raw_list.append(group)
 
         if i % 1000 == 0:
             print("%d users sampled" % i)
@@ -48,8 +50,9 @@ def split_train_test_proportion(data, test_prop=0.2):
 
     data_tr = pd.concat(tr_list)
     data_te = pd.concat(te_list)
+    data_raw = pd.concat(raw_list)
     
-    return data_tr, data_te
+    return data_tr, data_te, data_raw
 
 def numerize(tp, profile2id, show2id):
     uid = list(map(lambda x: profile2id[x], tp['userId']))
@@ -65,6 +68,18 @@ def load_train_data(csv_file,n_items):
     data = sparse.csr_matrix((np.ones_like(rows),
                              (rows, cols)), dtype='float64',
                              shape=(n_users, n_items))
+    return data
+
+def load_test_data(csv_file,n_items):
+    tp = pd.read_csv(csv_file)
+
+    start_idx = tp['uid'].min()
+    end_idx = tp['uid'].max()
+    
+    rows, cols = tp['uid'] - start_idx, tp['sid']
+    data = sparse.csr_matrix((np.ones_like(rows),
+                             (rows, cols)), dtype='float64',
+                             shape=(end_idx - start_idx + 1, n_items))
     return data
 
 def load_tr_te_data(csv_file_tr, csv_file_te, n_items):

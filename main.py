@@ -20,7 +20,7 @@ from model import MultiDAE, MultiVAE
 from metrics import *
 from utils import *
 
-DATA_DIR = '../../../data/ml-20m/'
+DATA_DIR = '../data/ml-20m/'
 raw_data = pd.read_csv(os.path.join(DATA_DIR, 'ratings.csv'), header=0)
 raw_data = raw_data[raw_data['rating'] > 3.5]
 
@@ -66,7 +66,7 @@ vad_plays_tr, vad_plays_te = split_train_test_proportion(vad_plays)
 
 test_plays = raw_data.loc[raw_data['userId'].isin(te_users)]
 test_plays = test_plays.loc[test_plays['movieId'].isin(unique_sid)]
-test_plays_tr, test_plays_te = split_train_test_proportion(test_plays)
+test_plays_tr, test_plays_te, test_plays_raw = split_train_test_proportion(test_plays)
 
 train_data = numerize(train_plays, profile2id, show2id)
 train_data.to_csv(os.path.join(pro_dir, 'train.csv'), index=False)
@@ -78,6 +78,8 @@ test_data_tr = numerize(test_plays_tr, profile2id, show2id)
 test_data_tr.to_csv(os.path.join(pro_dir, 'test_tr.csv'), index=False)
 test_data_te = numerize(test_plays_te, profile2id, show2id)
 test_data_te.to_csv(os.path.join(pro_dir, 'test_te.csv'), index=False)
+test_data = numerize(test_plays_raw, profile2id, show2id)
+test_data.to_csv(os.path.join(pro_dir, 'test.csv'), index=False)
 
 # Model Definition and Training
 
@@ -119,7 +121,7 @@ p_dims = [200, 600, n_items]
 tf.reset_default_graph()
 vae = MultiVAE(p_dims, lam=0.0, random_seed=98765)
 
-saver, logits_var, loss_var, train_op_var, merged_var = vae.build_graph()
+saver, logits_var, loss_var, train_op_var, merged_var = vae.build_graph(0)
 
 ndcg_var = tf.Variable(0.0)
 ndcg_dist_var = tf.placeholder(dtype=tf.float64, shape=None)

@@ -8,6 +8,14 @@ def get_count(tp, id):
     count = playcount_groupbyid.size()
     return count
 
+def get_ratings_histogram(data):
+    user_type = []
+    data_grouped_by_rating = data.groupby('rating')
+    for i, (_, group) in enumerate(data_grouped_by_rating):
+        user_type.append(len(group['rating'])) 
+    plot_bar_graph(user_type)
+    return 0
+
 def filter_triplets(tp, min_uc=5, min_sc=0):
     # Only keep the triplets for items which were clicked on by at least min_sc users.
     if min_sc > 0:
@@ -145,3 +153,11 @@ def plot_sorted_preds(preds):
     plt.xlabel("Items")
     plt.savefig('preds_sorted.pdf', bbox_inches='tight')
     #plt.show()
+
+def plot_bar_graph(data):
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots()
+    plt.bar(np.arange(len(data)),data)
+    plt.xticks(np.arange(len(data)),['0.5','1.0','1.5','2.0','2.5','3.0','3.5','4.0','4.5','5.0'])
+    #plt.show() 
+    plt.savefig('ratings_hist.pdf', bbox_inches='tight')

@@ -22,6 +22,7 @@ from utils import *
 
 DATA_DIR = '../data/ml-20m/'
 raw_data = pd.read_csv(os.path.join(DATA_DIR, 'ratings.csv'), header=0)
+get_ratings_histogram(raw_data)
 raw_data = raw_data[raw_data['rating'] > 3.5]
 
 # Only keep items that are clicked on by at least 5 users

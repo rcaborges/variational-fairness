@@ -22,7 +22,8 @@ from utils import *
 
 DATA_DIR = '../data/ml-20m/'
 raw_data = pd.read_csv(os.path.join(DATA_DIR, 'ratings.csv'), header=0)
-get_ratings_histogram(raw_data)
+#get_ratings_histogram(raw_data, ['0.5','1.0','1.5','2.0','2.5','3.0','3.5','4.0','4.5','5.0'])
+
 raw_data = raw_data[raw_data['rating'] > 3.5]
 
 # Only keep items that are clicked on by at least 5 users
@@ -63,11 +64,12 @@ with open(os.path.join(pro_dir, 'unique_sid.txt'), 'w') as f:
 
 vad_plays = raw_data.loc[raw_data['userId'].isin(vd_users)]
 vad_plays = vad_plays.loc[vad_plays['movieId'].isin(unique_sid)]
-vad_plays_tr, vad_plays_te = split_train_test_proportion(vad_plays)
+vad_plays_tr, vad_plays_te, vad_plays_raw = split_train_test_proportion(vad_plays)
 
 test_plays = raw_data.loc[raw_data['userId'].isin(te_users)]
 test_plays = test_plays.loc[test_plays['movieId'].isin(unique_sid)]
 test_plays_tr, test_plays_te, test_plays_raw = split_train_test_proportion(test_plays)
+user1, user2, user3 = get_user_by_mean(test_plays_raw)
 
 train_data = numerize(train_plays, profile2id, show2id)
 train_data.to_csv(os.path.join(pro_dir, 'train.csv'), index=False)
@@ -81,6 +83,13 @@ test_data_te = numerize(test_plays_te, profile2id, show2id)
 test_data_te.to_csv(os.path.join(pro_dir, 'test_te.csv'), index=False)
 test_data = numerize(test_plays_raw, profile2id, show2id)
 test_data.to_csv(os.path.join(pro_dir, 'test.csv'), index=False)
+
+user1 = numerize(user1, profile2id, show2id)
+user1.to_csv(os.path.join(pro_dir, 'test_user1.csv'), index=False)
+user2 = numerize(user2, profile2id, show2id)
+user2.to_csv(os.path.join(pro_dir, 'test_user2.csv'), index=False)
+user3 = numerize(user3, profile2id, show2id)
+user3.to_csv(os.path.join(pro_dir, 'test_user3.csv'), index=False)
 
 # Model Definition and Training
 
@@ -122,7 +131,7 @@ p_dims = [200, 600, n_items]
 tf.reset_default_graph()
 vae = MultiVAE(p_dims, lam=0.0, random_seed=98765)
 
-saver, logits_var, loss_var, train_op_var, merged_var = vae.build_graph(0)
+saver, logits_var, loss_var, train_op_var, merged_var = vae.build_graph(2)
 
 ndcg_var = tf.Variable(0.0)
 ndcg_dist_var = tf.placeholder(dtype=tf.float64, shape=None)
@@ -219,7 +228,6 @@ with tf.Session() as sess:
             best_ndcg = ndcg_       
 
 print(ndcgs_vad)
-plot_curve(ndcgs_vad)
 
 # Test data
 test_data_tr, test_data_te = load_tr_te_data(
@@ -233,7 +241,7 @@ batch_size_test = 2000
 
 tf.reset_default_graph()
 vae = MultiVAE(p_dims, lam=0.0)
-saver, logits_var, _, _, _ = vae.build_graph()
+saver, logits_var, _, _, _ = vae.build_graph(0)
 
 chkpt_dir = './chkpt/ml-20m/VAE_anneal{}K_cap{:1.1E}/{}'.format(
     total_anneal_steps/1000, anneal_cap, arch_str)

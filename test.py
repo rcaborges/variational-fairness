@@ -44,7 +44,7 @@ anneal_cap = 0.2
 #    n_items)
 
 test_data = load_test_data(
-    os.path.join(pro_dir, 'test.csv'),
+    os.path.join(pro_dir, 'test_user1.csv'),
     n_items)
 
 N_test = test_data.shape[0]
@@ -68,18 +68,16 @@ preds = []
 
 with tf.Session() as sess:
     saver.restore(sess, '{}/model'.format(chkpt_dir))
-    for bnum, st_idx in enumerate(range(0, N_test, batch_size_test)):
-        end_idx = min(st_idx + batch_size_test, N_test)
-        X = test_data[idxlist_test[st_idx:end_idx]]
+    X = test_data
 
-        if sparse.isspmatrix(X):
-            X = X.toarray()
-        X = X.astype('float32')
+    if sparse.isspmatrix(X):
+        X = X.toarray()
+    X = X.astype('float32')
 
-        pred_val = sess.run(logits_var, feed_dict={vae.input_ph: X})
-        # exclude examples from training and validation (if any)
-        pred_val[X.nonzero()] = -np.inf
-        preds.extend(pred_val)
+    pred_val = sess.run(logits_var, feed_dict={vae.input_ph: X})
+    # exclude examples from training and validation (if any)
+    pred_val[X.nonzero()] = -np.inf
+    preds.extend(pred_val)
 
 num_users = 1000
 num_items = 100

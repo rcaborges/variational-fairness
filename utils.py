@@ -8,13 +8,26 @@ def get_count(tp, id):
     count = playcount_groupbyid.size()
     return count
 
-def get_ratings_histogram(data):
+def get_ratings_histogram(data, labels):
     user_type = []
     data_grouped_by_rating = data.groupby('rating')
     for i, (_, group) in enumerate(data_grouped_by_rating):
         user_type.append(len(group['rating'])) 
-    plot_bar_graph(user_type)
+    plot_bar_graph(user_type, labels)
     return 0
+
+def get_user_by_mean(data):
+    df1 = data.groupby('userId').size() 
+    quant1 = np.quantile(df1.values,1/3)
+    quant2 = np.quantile(df1.values,2/3)
+
+    user1 = data.loc[data['userId'].isin(df1[df1 < quant1].index.values)]
+    l1 = list(df1[df1 >= quant1].index.values)
+    l2 = list(df1[df1 < quant2].index.values)
+    user2 = data.loc[data['userId'].isin(np.intersect1d(l1,l2))]
+    user3 = data.loc[data['userId'].isin(df1[df1 >= quant2].index.values)]
+
+    return user1, user2, user3
 
 def filter_triplets(tp, min_uc=5, min_sc=0):
     # Only keep the triplets for items which were clicked on by at least min_sc users.
@@ -154,10 +167,18 @@ def plot_sorted_preds(preds):
     plt.savefig('preds_sorted.pdf', bbox_inches='tight')
     #plt.show()
 
-def plot_bar_graph(data):
+def plot_bar_graph(data, labels):
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
     plt.bar(np.arange(len(data)),data)
-    plt.xticks(np.arange(len(data)),['0.5','1.0','1.5','2.0','2.5','3.0','3.5','4.0','4.5','5.0'])
+    plt.xticks(np.arange(len(data)),labels)
     #plt.show() 
     plt.savefig('ratings_hist.pdf', bbox_inches='tight')
+
+def plot_histogram(data):
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots()
+    print(max(data))
+    plt.hist(data,int(max(data)))
+    #plt.show() 
+    plt.savefig('user_hist.pdf', bbox_inches='tight')

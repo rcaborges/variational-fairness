@@ -44,7 +44,7 @@ anneal_cap = 0.2
 #    n_items)
 
 test_data = load_test_data(
-    os.path.join(pro_dir, 'test_user1.csv'),
+    os.path.join(pro_dir, 'test_user3.csv'),
     n_items)
 
 N_test = test_data.shape[0]

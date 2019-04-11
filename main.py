@@ -20,9 +20,12 @@ from model import MultiDAE, MultiVAE
 from metrics import *
 from utils import *
 
-DATA_DIR = '../data/ml-20m/'
-raw_data = pd.read_csv(os.path.join(DATA_DIR, 'ratings.csv'), header=0)
+#DATA_DIR = '../data/ml-20m/'
+DATA_DIR = '../data/Netflix/NF_TRAIN/'
+#raw_data = pd.read_csv(os.path.join(DATA_DIR, 'ratings.csv'), header=0)
+raw_data = pd.read_csv(os.path.join(DATA_DIR, 'nf.train.txt'), sep='\t', header=None, names=['userId','movieId','rating'])
 #get_ratings_histogram(raw_data, ['0.5','1.0','1.5','2.0','2.5','3.0','3.5','4.0','4.5','5.0'])
+pro_dir = os.path.join(DATA_DIR, 'pro_sg')
 
 raw_data = raw_data[raw_data['rating'] > 3.5]
 
@@ -40,56 +43,8 @@ np.random.seed(98765)
 idx_perm = np.random.permutation(unique_uid.size)
 unique_uid = unique_uid[idx_perm]
 
-# create train/validation/test users
-n_users = unique_uid.size
-n_heldout_users = 10000
-
-tr_users = unique_uid[:(n_users - n_heldout_users * 2)]
-vd_users = unique_uid[(n_users - n_heldout_users * 2): (n_users - n_heldout_users)]
-te_users = unique_uid[(n_users - n_heldout_users):]
-
-train_plays = raw_data.loc[raw_data['userId'].isin(tr_users)]
-unique_sid = pd.unique(train_plays['movieId'])
-
-show2id = dict((sid, i) for (i, sid) in enumerate(unique_sid))
-profile2id = dict((pid, i) for (i, pid) in enumerate(unique_uid))
-pro_dir = os.path.join(DATA_DIR, 'pro_sg')
-
-if not os.path.exists(pro_dir):
-    os.makedirs(pro_dir)
-
-with open(os.path.join(pro_dir, 'unique_sid.txt'), 'w') as f:
-    for sid in unique_sid:
-        f.write('%s\n' % sid)
-
-vad_plays = raw_data.loc[raw_data['userId'].isin(vd_users)]
-vad_plays = vad_plays.loc[vad_plays['movieId'].isin(unique_sid)]
-vad_plays_tr, vad_plays_te, vad_plays_raw = split_train_test_proportion(vad_plays)
-
-test_plays = raw_data.loc[raw_data['userId'].isin(te_users)]
-test_plays = test_plays.loc[test_plays['movieId'].isin(unique_sid)]
-test_plays_tr, test_plays_te, test_plays_raw = split_train_test_proportion(test_plays)
-user1, user2, user3 = get_user_by_mean(test_plays_raw)
-
-train_data = numerize(train_plays, profile2id, show2id)
-train_data.to_csv(os.path.join(pro_dir, 'train.csv'), index=False)
-vad_data_tr = numerize(vad_plays_tr, profile2id, show2id)
-vad_data_tr.to_csv(os.path.join(pro_dir, 'validation_tr.csv'), index=False)
-vad_data_te = numerize(vad_plays_te, profile2id, show2id)
-vad_data_te.to_csv(os.path.join(pro_dir, 'validation_te.csv'), index=False)
-test_data_tr = numerize(test_plays_tr, profile2id, show2id)
-test_data_tr.to_csv(os.path.join(pro_dir, 'test_tr.csv'), index=False)
-test_data_te = numerize(test_plays_te, profile2id, show2id)
-test_data_te.to_csv(os.path.join(pro_dir, 'test_te.csv'), index=False)
-test_data = numerize(test_plays_raw, profile2id, show2id)
-test_data.to_csv(os.path.join(pro_dir, 'test.csv'), index=False)
-
-user1 = numerize(user1, profile2id, show2id)
-user1.to_csv(os.path.join(pro_dir, 'test_user1.csv'), index=False)
-user2 = numerize(user2, profile2id, show2id)
-user2.to_csv(os.path.join(pro_dir, 'test_user2.csv'), index=False)
-user3 = numerize(user3, profile2id, show2id)
-user3.to_csv(os.path.join(pro_dir, 'test_user3.csv'), index=False)
+#load_movielens_data(raw_data, unique_uid, DATA_DIR, pro_dir)
+load_netflix_data(raw_data, unique_uid, DATA_DIR, pro_dir)
 
 # Model Definition and Training
 

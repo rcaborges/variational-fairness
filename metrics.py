@@ -63,16 +63,12 @@ def Fairness_at_k_rounds(X_pred, dcg_gt):
     ufair_all = []
     ndcg_all = []
     for user in range(X_pred.shape[1]):
-        ufair = 0.0
-        ndcg = 0.0
+        ufair, ndcg = 0.0, 0.0
         for item in range(X_pred.shape[2]):
-            sum_a = 0
-            sum_r = 0
-            item_ufair = []
-            item_ndcg = []
+            sum_a, sum_r = 0,0
+            item_ufair, item_ndcg = [], []
             for iround in range(X_pred.shape[0]):
-                att = 0
-                rel = 0
+                att, rel = 0,0
                 if X_pred[iround,user,item] != -np.inf:
                     if debug: print(user,item,iround)
                     # NORMALIZE SCORES BETWEEN THE MINIMUN AND MAXIMUN VALUES

@@ -20,31 +20,10 @@ from model import MultiDAE, MultiVAE
 from metrics import *
 from utils import *
 
-#DATA_DIR = '../data/ml-20m/'
-DATA_DIR = '../data/Netflix/NF_TRAIN/'
-#raw_data = pd.read_csv(os.path.join(DATA_DIR, 'ratings.csv'), header=0)
-raw_data = pd.read_csv(os.path.join(DATA_DIR, 'nf.train.txt'), sep='\t', header=None, names=['userId','movieId','rating'])
-#get_ratings_histogram(raw_data, ['0.5','1.0','1.5','2.0','2.5','3.0','3.5','4.0','4.5','5.0'])
-pro_dir = os.path.join(DATA_DIR, 'pro_sg')
-
-raw_data = raw_data[raw_data['rating'] > 3.5]
-
-# Only keep items that are clicked on by at least 5 users
-raw_data, user_activity, item_popularity = filter_triplets(raw_data)
-
-sparsity = 1. * raw_data.shape[0] / (user_activity.shape[0] * item_popularity.shape[0])
-
-print("After filtering, there are %d watching events from %d users and %d movies (sparsity: %.3f%%)" %
-      (raw_data.shape[0], user_activity.shape[0], item_popularity.shape[0], sparsity * 100))
-
-unique_uid = user_activity.index
-
-np.random.seed(98765)
-idx_perm = np.random.permutation(unique_uid.size)
-unique_uid = unique_uid[idx_perm]
-
-#load_movielens_data(raw_data, unique_uid, DATA_DIR, pro_dir)
-load_netflix_data(raw_data, unique_uid, DATA_DIR, pro_dir)
+#dataset = 'netflix'
+dataset = 'ml-20m'
+pro_dir = load_movielens_data()
+#pro_dir = load_netflix_data()
 
 # Model Definition and Training
 
@@ -97,7 +76,7 @@ merged_valid = tf.summary.merge([ndcg_summary, ndcg_dist_summary])
 arch_str = "I-%s-I" % ('-'.join([str(d) for d in vae.dims[1:-1]]))
 
 #log_dir = '/volmount/log/ml-20m/VAE_anneal{}K_cap{:1.1E}/{}'.format(
-log_dir = './log/ml-20m/VAE_anneal{}K_cap{:1.1E}/{}'.format(
+log_dir = './log/'+dataset+'/VAE_anneal{}K_cap{:1.1E}/{}'.format(
     total_anneal_steps/1000, anneal_cap, arch_str)
 
 if os.path.exists(log_dir):
@@ -107,7 +86,7 @@ print("log directory: %s" % log_dir)
 summary_writer = tf.summary.FileWriter(log_dir, graph=tf.get_default_graph())
 
 #chkpt_dir = '/volmount/chkpt/ml-20m/VAE_anneal{}K_cap{:1.1E}/{}'.format(
-chkpt_dir = './chkpt/ml-20m/VAE_anneal{}K_cap{:1.1E}/{}'.format(
+chkpt_dir = './chkpt/'+dataset+'/VAE_anneal{}K_cap{:1.1E}/{}'.format(
     total_anneal_steps/1000, anneal_cap, arch_str)
 
 if not os.path.isdir(chkpt_dir):
@@ -198,7 +177,7 @@ tf.reset_default_graph()
 vae = MultiVAE(p_dims, lam=0.0)
 saver, logits_var, _, _, _ = vae.build_graph(0)
 
-chkpt_dir = './chkpt/ml-20m/VAE_anneal{}K_cap{:1.1E}/{}'.format(
+chkpt_dir = './chkpt/'+dataset+'/VAE_anneal{}K_cap{:1.1E}/{}'.format(
     total_anneal_steps/1000, anneal_cap, arch_str)
 print("chkpt directory: %s" % chkpt_dir)
 

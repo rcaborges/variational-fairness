@@ -168,7 +168,7 @@ def main(dataset, test_file):
     # UNIFORM NOISE 
     ufairs_unif, ndcgs_unif = test_model_k_rounds(p_dims, 4, test_data, num_rounds, num_users, num_items, topkItens, dcg_gt)
     
-    plot_comparison([ufairs,ufairs_n05, ufairs_n10,ufairs_n20, ufairs_unif],[1-ndcgs,1-ndcgs_n05, 1-ndcgs_n10,1-ndcgs_n20,1-ndcgs_unif],['original','N(std=0.5)','N(std=1.0)','N(std=2.0)','uniform'])
+    plot_comparison([ufairs,ufairs_n05, ufairs_n10,ufairs_n20, ufairs_unif],[1-ndcgs,1-ndcgs_n05, 1-ndcgs_n10,1-ndcgs_n20,1-ndcgs_unif],['original','N(std=0.5)','N(std=1.0)','N(std=2.0)','uniform'], dataset, test_file)
 
 
 if __name__ == "__main__":

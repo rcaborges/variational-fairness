@@ -4,6 +4,11 @@ import pandas as pd
 from scipy import sparse
 import os
 
+def load_data(dataset):
+    if dataset == 'netflix': pro_dir = load_netflix_data()
+    if dataset == 'ml-20m': pro_dir = load_movielens_data()
+    return pro_dir
+
 def load_netflix_data():
 
     DATA_DIR = '../data/Netflix/'
@@ -287,7 +292,7 @@ def set_box_color(bp, color):
     plt.setp(bp['caps'], color=color)
     plt.setp(bp['medians'], color=color)
 
-def plot_comparison(data_a, data_b, ticks):
+def plot_comparison(data_a, data_b, ticks, dataset, test_file):
     import matplotlib.pyplot as plt
     plt.figure()
     bpl = plt.boxplot(data_a, positions=np.array(range(len(data_a)))*2.0-0.4, sym='', widths=0.6)
@@ -307,7 +312,7 @@ def plot_comparison(data_a, data_b, ticks):
     plt.xlim(-2, len(ticks)*2)
     #plt.ylim(np.min(np.concatenate((data_a,data_b),axis=1)), np.max(np.concatenate((data_a,data_b),axis=1)))
     plt.tight_layout()
-    plt.savefig('boxcompare.pdf')
+    plt.savefig('boxcompare_'+dataset+'_'+test_file+'.pdf')
 
 def plot_sorted_preds(preds):
     import matplotlib.pyplot as plt

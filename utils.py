@@ -7,11 +7,12 @@ import os
 def load_data(dataset):
     if dataset == 'netflix': pro_dir = load_netflix_data()
     if dataset == 'ml-20m': pro_dir = load_movielens_data()
+    if dataset == 'msd': pro_dir = load_msd_data()
     return pro_dir
 
 def load_netflix_data():
 
-    DATA_DIR = '../data/Netflix/'
+    DATA_DIR = '../data/netflix/'
     raw_data_train = pd.read_csv(os.path.join(DATA_DIR, 'NF_TRAIN/nf.train.txt'), sep='\t', header=None, names=['userId','movieId','rating'])
     raw_data_valid = pd.read_csv(os.path.join(DATA_DIR, 'NF_VALID/nf.valid.txt'), sep='\t', header=None, names=['userId','movieId','rating'])
     raw_data_test = pd.read_csv(os.path.join(DATA_DIR, 'NF_TEST/nf.test.txt'), sep='\t', header=None, names=['userId','movieId','rating'])
@@ -21,6 +22,10 @@ def load_netflix_data():
     
     # Only keep items that are clicked on by at least 5 users
     raw_data, user_activity, item_popularity = filter_triplets(raw_data)
+    raw_data = raw_data.sort_values(by=['userId'])
+    raw_data = raw_data.sort_values(by=['userId','movieId'])
+    raw_data = raw_data.reset_index(drop=True)
+    _, _, _ = get_user_by_mean(raw_data)
     
     sparsity = 1. * raw_data.shape[0] / (user_activity.shape[0] * item_popularity.shape[0])
     
@@ -95,6 +100,9 @@ def load_movielens_data():
     
     # Only keep items that are clicked on by at least 5 users
     raw_data, user_activity, item_popularity = filter_triplets(raw_data)
+    raw_data = raw_data.sort_values(by=['userId','movieId'])
+    raw_data = raw_data.reset_index(drop=True)
+    _, _, _ = get_user_by_mean(raw_data)
     
     sparsity = 1. * raw_data.shape[0] / (user_activity.shape[0] * item_popularity.shape[0])
     
@@ -110,6 +118,83 @@ def load_movielens_data():
     # create train/validation/test users
     n_users = unique_uid.size
     n_heldout_users = 10000
+    
+    tr_users = unique_uid[:(n_users - n_heldout_users * 2)]
+    vd_users = unique_uid[(n_users - n_heldout_users * 2): (n_users - n_heldout_users)]
+    te_users = unique_uid[(n_users - n_heldout_users):]
+    
+    train_plays = raw_data.loc[raw_data['userId'].isin(tr_users)]
+    unique_sid = pd.unique(train_plays['movieId'])
+    
+    show2id = dict((sid, i) for (i, sid) in enumerate(unique_sid))
+    profile2id = dict((pid, i) for (i, pid) in enumerate(unique_uid))
+    
+    if not os.path.exists(pro_dir):
+        os.makedirs(pro_dir)
+    
+    with open(os.path.join(pro_dir, 'unique_sid.txt'), 'w') as f:
+        for sid in unique_sid:
+            f.write('%s\n' % sid)
+    
+    vad_plays = raw_data.loc[raw_data['userId'].isin(vd_users)]
+    vad_plays = vad_plays.loc[vad_plays['movieId'].isin(unique_sid)]
+    vad_plays_tr, vad_plays_te, vad_plays_raw = split_train_test_proportion(vad_plays)
+    
+    test_plays = raw_data.loc[raw_data['userId'].isin(te_users)]
+    test_plays = test_plays.loc[test_plays['movieId'].isin(unique_sid)]
+    test_plays_tr, test_plays_te, test_plays_raw = split_train_test_proportion(test_plays)
+    user1, user2, user3 = get_user_by_mean(test_plays_raw)
+    
+    train_data = numerize(train_plays, profile2id, show2id)
+    train_data.to_csv(os.path.join(pro_dir, 'train.csv'), index=False)
+    vad_data_tr = numerize(vad_plays_tr, profile2id, show2id)
+    vad_data_tr.to_csv(os.path.join(pro_dir, 'validation_tr.csv'), index=False)
+    vad_data_te = numerize(vad_plays_te, profile2id, show2id)
+    vad_data_te.to_csv(os.path.join(pro_dir, 'validation_te.csv'), index=False)
+    test_data_tr = numerize(test_plays_tr, profile2id, show2id)
+    test_data_tr.to_csv(os.path.join(pro_dir, 'test_tr.csv'), index=False)
+    test_data_te = numerize(test_plays_te, profile2id, show2id)
+    test_data_te.to_csv(os.path.join(pro_dir, 'test_te.csv'), index=False)
+    test_data = numerize(test_plays_raw, profile2id, show2id)
+    test_data.to_csv(os.path.join(pro_dir, 'test.csv'), index=False)
+    
+    user1 = numerize(user1, profile2id, show2id)
+    user1.to_csv(os.path.join(pro_dir, 'test_user1.csv'), index=False)
+    user2 = numerize(user2, profile2id, show2id)
+    user2.to_csv(os.path.join(pro_dir, 'test_user2.csv'), index=False)
+    user3 = numerize(user3, profile2id, show2id)
+    user3.to_csv(os.path.join(pro_dir, 'test_user3.csv'), index=False)
+
+    return pro_dir
+
+def load_msd_data():
+
+    DATA_DIR = '../data/msd/'
+    raw_data = pd.read_csv(os.path.join(DATA_DIR, 'train_triplets-random.txt'), sep='\t', header=None, names=['userId','movieId','rating'])
+    pro_dir = os.path.join(DATA_DIR, 'pro_sg')
+    
+    #raw_data = raw_data[raw_data['rating'] > 3.5]
+    
+    # Only keep items that are clicked on by at least 5 users
+    raw_data, user_activity, item_popularity = filter_triplets(raw_data, 20, 200)
+    raw_data = raw_data.sort_values(by=['userId','movieId'])
+    raw_data = raw_data.reset_index(drop=True)
+    _, _, _ = get_user_by_mean(raw_data)
+    
+    sparsity = 1. * raw_data.shape[0] / (user_activity.shape[0] * item_popularity.shape[0])
+    
+    print("After filtering, there are %d watching events from %d users and %d movies (sparsity: %.3f%%)" %
+          (raw_data.shape[0], user_activity.shape[0], item_popularity.shape[0], sparsity * 100))
+    
+    unique_uid = user_activity.index
+    
+    np.random.seed(98765)
+    idx_perm = np.random.permutation(unique_uid.size)
+    unique_uid = unique_uid[idx_perm]
+
+    # create train/validation/test users
+    n_users = unique_uid.size
+    n_heldout_users = 50000
     
     tr_users = unique_uid[:(n_users - n_heldout_users * 2)]
     vd_users = unique_uid[(n_users - n_heldout_users * 2): (n_users - n_heldout_users)]
@@ -176,12 +261,14 @@ def get_user_by_mean(data):
     df1 = data.groupby('userId').size() 
     quant1 = np.quantile(df1.values,1/3)
     quant2 = np.quantile(df1.values,2/3)
+    print(quant1,quant2)    
 
     user1 = data.loc[data['userId'].isin(df1[df1 < quant1].index.values)]
     l1 = list(df1[df1 >= quant1].index.values)
     l2 = list(df1[df1 < quant2].index.values)
     user2 = data.loc[data['userId'].isin(np.intersect1d(l1,l2))]
     user3 = data.loc[data['userId'].isin(df1[df1 >= quant2].index.values)]
+    print(len(set(user1['userId'])),len(set(user2['userId'])),len(set(user3['userId'])))
 
     return user1, user2, user3
 
@@ -236,6 +323,10 @@ def numerize(tp, profile2id, show2id):
     sid = list(map(lambda x: show2id[x], tp['movieId']))
     return pd.DataFrame(data={'uid': uid, 'sid': sid}, columns=['uid', 'sid'])
 
+def numerize_test(tp, profile2id, show2id):
+    uid = list(map(lambda x: profile2id[x], tp['uid']))
+    sid = list(map(lambda x: show2id[x], tp['sid']))
+    return pd.DataFrame(data={'uid': uid, 'sid': sid}, columns=['uid', 'sid'])
 
 def load_train_data(csv_file,n_items):
     tp = pd.read_csv(csv_file)
@@ -249,6 +340,13 @@ def load_train_data(csv_file,n_items):
 
 def load_test_data(csv_file,n_items):
     tp = pd.read_csv(csv_file)
+    tp = tp.sort_values(by=['uid','sid'])
+    tp = tp.reset_index(drop=True)
+
+    n_users = set(tp['uid'].values)
+    profile2id = dict((pid, i) for (i, pid) in enumerate(n_users))
+    show2id = dict((sid, i) for (i, sid) in enumerate(range(n_items)))
+    tp = numerize_test(tp, profile2id, show2id)
 
     start_idx = tp['uid'].min()
     end_idx = tp['uid'].max()
@@ -312,7 +410,7 @@ def plot_comparison(data_a, data_b, ticks, dataset, test_file):
     plt.xlim(-2, len(ticks)*2)
     #plt.ylim(np.min(np.concatenate((data_a,data_b),axis=1)), np.max(np.concatenate((data_a,data_b),axis=1)))
     plt.tight_layout()
-    plt.savefig('boxcompare_'+dataset+'_'+test_file+'.pdf')
+    plt.savefig('plots/boxcompare_'+dataset+'_'+test_file+'.pdf')
 
 def plot_sorted_preds(preds):
     import matplotlib.pyplot as plt

@@ -354,7 +354,8 @@ def load_test_data(csv_file,n_items):
     rows, cols = tp['uid'] - start_idx, tp['sid']
     data = sparse.csr_matrix((np.ones_like(rows),
                              (rows, cols)), dtype='float64',
-                             shape=(end_idx - start_idx + 1, n_items))
+                             #shape=(end_idx - start_idx + 1, n_items))
+                             shape=(end_idx + 1, n_items))
     return data
 
 def load_tr_te_data(csv_file_tr, csv_file_te, n_items):
@@ -408,6 +409,7 @@ def plot_comparison(data_a, data_b, ticks, dataset, test_file):
     
     plt.xticks(range(0, len(ticks) * 2, 2), ticks)
     plt.xlim(-2, len(ticks)*2)
+    plt.ylim(-0.05,0.40)
     #plt.ylim(np.min(np.concatenate((data_a,data_b),axis=1)), np.max(np.concatenate((data_a,data_b),axis=1)))
     plt.tight_layout()
     plt.savefig('plots/boxcompare_'+dataset+'_'+test_file+'.pdf')

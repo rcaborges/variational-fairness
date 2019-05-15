@@ -1,5 +1,7 @@
 # variational_fairness
 
+Fairness aware variational autoencoder for collaborative filtering 
+
 - the req.txt file contains all the information about building the environment. I normally use conda to do this
 - you should use train.py script to train the model and test.py to test it. Remind the test.py script receives the csv file containing the test data. (this test.csv file is generated in the pre processing phase of the training)
 - you should get the datasets we used in the experiments. Please check in the paper to see where to download it (i.e. Netflix, MSD and Movielens)

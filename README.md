@@ -5,6 +5,8 @@
 - you should get the datasets we used in the experiments. Please check in the paper to see where to download it (i.e. Netflix, MSD and Movielens)
 - remind that the paths to the dataset are hard coded in utils.py, and you should change it depending on where the files are in your computer. 
 
-A typical usage:
+A typical usage is:
+
 python main.py netflix
+
 python test.py netflix test.csv

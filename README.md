@@ -1,10 +1,10 @@
 # fairness-aware variational autoencoder 
-Neural collaborative filtering(NCF), is a deep learning based framework for making recommendations. The key idea is to learn the user-item interaction using neural networks. Check the follwing paper for details about NCF.
 
-> He, Xiangnan, et al. "Neural collaborative filtering." Proceedings of the 26th International Conference on World Wide Web. International World Wide Web Conferences Steering Committee, 2017.
+Variational autoencoders for collaborative filtering, is a deep learning based framework for making recommendations. 
 
-The authors of NCF actually published [a nice implementation](https://github.com/hexiangnan/neural_collaborative_filtering) written in tensorflow(keras). This repo instead provides my implementation written in **pytorch**. I hope it would be helpful to pytorch fans. Have fun playing with it !
+>  "Variational autoencoders for collaborative filtering" by Dawen Liang, Rahul G. Krishnan, Matthew D. Hoffman, and Tony Jebara, in The Web Conference (aka WWW) 2018.
 
+The authors published [a nice implementation](https://github.com/dawenl/vae_cf) written in tensorflow. 
 Fairness aware variational autoencoder for collaborative filtering 
 
 - the req.txt file contains all the information about building the environment. I normally use conda to do this

@@ -16,3 +16,21 @@ A typical usage is:
 python main.py netflix
 
 python test.py netflix test.csv
+
+
+> @inproceedings{10.1145/3297662.3365798,
+> author = {Borges, Rodrigo and Stefanidis, Kostas},
+> title = {Enhancing Long Term Fairness in Recommendations with Variational Autoencoders},
+> year = {2019},
+> isbn = {9781450362382},
+> publisher = {Association for Computing Machinery},
+> address = {New York, NY, USA},
+> url = {https://doi.org/10.1145/3297662.3365798},
+> doi = {10.1145/3297662.3365798},
+> booktitle = {Proceedings of the 11th International Conference on Management of Digital EcoSystems},
+> pages = {95–102},
+> numpages = {8},
+> keywords = {Position Bias, Collaborative Filtering, Recommendation Systems, Fairness in Ranking, Variational Autoencoder},
+> location = {Limassol, Cyprus},
+> series = {MEDES ’19}
+> }

@@ -33,4 +33,4 @@ python test.py netflix test.csv
 >   keywords = {Position Bias, Collaborative Filtering, Recommendation Systems, Fairness in Ranking, Variational Autoencoder},\
 >   location = {Limassol, Cyprus},\
 >   series = {MEDES ’19}\
-> }\
+> }

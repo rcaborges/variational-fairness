@@ -25,7 +25,7 @@ python test.py netflix test.csv
 >   isbn = {9781450362382},\
 >   publisher = {Association for Computing Machinery},\
 >   address = {New York, NY, USA},\
->   url = {https://doi.org/10.1145/3297662.3365798}, \
+>   url = {https://doi.org/10.1145/3297662.3365798 }, \
 >   doi = {10.1145/3297662.3365798},\
 >   booktitle = {Proceedings of the 11th International Conference on Management of Digital EcoSystems},\
 >   pages = {95–102},\
